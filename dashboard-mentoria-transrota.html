@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mentoria Winner IA × Transrota — Jornada de 6 Meses</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#101010;
+    --ink:#1c1c1c;
+    --gold:#C8A24A;
+    --gold-deep:#A6873F;
+    --gold-soft:#F4ECD8;
+    --gold-line:#E7D9B4;
+    --paper:#FFFFFF;
+    --mist:#FAF8F3;
+    --line:#ECECEC;
+    --muted:#6E6E6E;
+    --green:#3F8F5B;
+    --shadow:0 1px 2px rgba(16,16,16,.04),0 8px 28px rgba(16,16,16,.06);
+    --shadow-lg:0 12px 50px rgba(16,16,16,.16);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Inter',-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:0 28px}
+
+  /* ---------- HEADER ---------- */
+  header{
+    border-bottom:1px solid var(--line);
+    background:#fff;
+    position:sticky;top:0;z-index:50;
+    backdrop-filter:saturate(160%) blur(6px);
+  }
+  .topbar{display:flex;align-items:center;justify-content:space-between;height:74px}
+  .brand{display:flex;align-items:center;gap:13px}
+  .logo{width:40px;height:40px;display:block}
+  .wordmark{font-weight:800;font-size:22px;letter-spacing:-.02em;color:var(--black)}
+  .wordmark .ia{color:var(--gold)}
+  .nav-tag{
+    font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);
+  }
+
+  /* ---------- HERO ---------- */
+  .hero{padding:54px 0 30px}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:9px;
+    font-size:12.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--gold-deep);margin-bottom:18px;
+  }
+  .eyebrow::before{content:"";width:26px;height:2px;background:var(--gold);border-radius:2px}
+  h1{
+    font-size:clamp(30px,4.6vw,50px);font-weight:900;letter-spacing:-.03em;
+    line-height:1.04;color:var(--black);max-width:18ch;
+  }
+  h1 em{font-style:normal;color:var(--gold)}
+  .lede{margin-top:18px;max-width:60ch;font-size:17px;color:#4a4a4a}
+
+  .meta-row{display:flex;flex-wrap:wrap;gap:14px;margin-top:30px}
+  .chip{
+    display:flex;flex-direction:column;gap:2px;
+    border:1px solid var(--line);border-radius:14px;
+    padding:14px 18px;background:var(--mist);min-width:150px;
+  }
+  .chip .k{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .chip .v{font-size:18px;font-weight:800;color:var(--black)}
+  .chip .v small{font-weight:600;font-size:13px;color:var(--muted)}
+
+  /* ---------- PROGRESS TIMELINE ---------- */
+  .timeline-sec{padding:14px 0 6px}
+  .track{
+    display:flex;align-items:center;gap:0;margin:8px 0 4px;
+    overflow-x:auto;padding-bottom:6px;
+  }
+  .node{display:flex;flex-direction:column;align-items:center;flex:1;min-width:84px;position:relative}
+  .node .dot{
+    width:30px;height:30px;border-radius:50%;display:grid;place-items:center;
+    font-size:13px;font-weight:800;border:2px solid var(--gold-line);
+    background:#fff;color:var(--muted);z-index:2;
+  }
+  .node.active .dot{background:var(--gold);border-color:var(--gold);color:#fff;box-shadow:0 0 0 5px var(--gold-soft)}
+  .node .lbl{font-size:11px;font-weight:600;color:var(--muted);margin-top:7px;text-align:center}
+  .node.active .lbl{color:var(--black)}
+  .node::before{content:"";position:absolute;top:15px;left:-50%;width:100%;height:2px;background:var(--gold-line);z-index:1}
+  .node:first-child::before{display:none}
+  .node.active::before{background:var(--gold)}
+
+  /* ---------- SECTION TITLE ---------- */
+  .sec-head{display:flex;align-items:baseline;justify-content:space-between;margin:40px 0 18px;gap:16px;flex-wrap:wrap}
+  .sec-head h2{font-size:13px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--black)}
+  .sec-head .hint{font-size:13px;color:var(--muted)}
+
+  /* ---------- MONTH GRID ---------- */
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  @media(max-width:880px){.grid{grid-template-columns:1fr 1fr}}
+  @media(max-width:620px){.grid{grid-template-columns:1fr}}
+
+  .card{
+    border:1px solid var(--line);border-radius:18px;background:#fff;
+    padding:24px 22px 22px;position:relative;overflow:hidden;
+    transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;
+    display:flex;flex-direction:column;min-height:236px;
+  }
+  .card .mnum{
+    font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--gold-deep);display:flex;align-items:center;gap:8px;margin-bottom:10px;
+  }
+  .card .mnum .badge{
+    width:28px;height:28px;border-radius:8px;background:var(--gold-soft);
+    display:grid;place-items:center;font-size:13px;color:var(--gold-deep);font-weight:900;
+  }
+  .card h3{font-size:19px;font-weight:800;letter-spacing:-.01em;color:var(--black);line-height:1.2}
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 4px}
+  .tag{font-size:11.5px;font-weight:600;color:var(--ink);background:var(--mist);border:1px solid var(--line);padding:4px 10px;border-radius:999px}
+  .focus{list-style:none;margin-top:12px;display:flex;flex-direction:column;gap:7px}
+  .focus li{font-size:13.5px;color:#494949;padding-left:18px;position:relative}
+  .focus li::before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;border-radius:50%;background:var(--gold)}
+  .card .foot{margin-top:auto;padding-top:16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .pill{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:5px 11px;border-radius:999px}
+  .pill.now{background:var(--gold);color:#fff}
+  .pill.next{background:#fff;color:var(--muted);border:1px solid var(--line)}
+  .pill.phase{background:#101010;color:#fff}
+
+  /* phase accent strip */
+  .card::after{content:"";position:absolute;left:0;top:0;height:100%;width:4px;background:transparent}
+  .card.p1::after{background:var(--gold)}
+  .card.p2::after{background:#101010}
+
+  /* clickable month 1 */
+  .card.clickable{cursor:pointer;border-color:var(--gold-line);background:linear-gradient(180deg,#fff, #FFFDF7)}
+  .card.clickable:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:var(--gold)}
+  .card .open-cta{
+    display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:700;color:var(--gold-deep);
+  }
+  .card .open-cta svg{transition:transform .18s ease}
+  .card.clickable:hover .open-cta svg{transform:translateX(3px)}
+  .card:not(.clickable){opacity:.97}
+
+  .phase-label{
+    grid-column:1/-1;display:flex;align-items:center;gap:12px;margin-top:8px;
+    font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+  }
+  .phase-label span{white-space:nowrap}
+  .phase-label::after{content:"";flex:1;height:1px;background:var(--line)}
+
+  /* ---------- MODAL ---------- */
+  .overlay{
+    position:fixed;inset:0;background:rgba(16,16,16,.55);backdrop-filter:blur(3px);
+    z-index:100;display:none;align-items:flex-start;justify-content:center;
+    padding:34px 18px;overflow-y:auto;
+  }
+  .overlay.open{display:flex}
+  .modal{
+    width:100%;max-width:860px;background:#fff;border-radius:20px;
+    box-shadow:var(--shadow-lg);overflow:hidden;animation:rise .28s ease;
+  }
+  @keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+  .modal-top{
+    background:var(--black);color:#fff;padding:26px 30px;position:relative;
+  }
+  .modal-top .kick{font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+  .modal-top h2{font-size:24px;font-weight:900;letter-spacing:-.02em;margin-top:6px}
+  .modal-top p{font-size:14px;color:#cfcfcf;margin-top:8px;max-width:64ch}
+  .close{
+    position:absolute;top:20px;right:20px;width:38px;height:38px;border-radius:10px;
+    background:rgba(255,255,255,.1);border:none;color:#fff;font-size:20px;cursor:pointer;
+    display:grid;place-items:center;transition:background .15s;
+  }
+  .close:hover{background:rgba(255,255,255,.22)}
+
+  .modal-body{padding:8px 30px 26px}
+  .qsection{border-bottom:1px solid var(--line);padding:22px 0}
+  .qsection:last-of-type{border-bottom:none}
+  .qsection .s-num{
+    display:inline-flex;align-items:center;gap:9px;font-size:12px;font-weight:800;
+    letter-spacing:.12em;text-transform:uppercase;color:var(--gold-deep);margin-bottom:4px;
+  }
+  .qsection .s-num b{
+    width:24px;height:24px;border-radius:7px;background:var(--gold-soft);color:var(--gold-deep);
+    display:grid;place-items:center;font-size:12px;
+  }
+  .qsection h4{font-size:17px;font-weight:800;color:var(--black);letter-spacing:-.01em}
+  .q{margin-top:14px}
+  .q label{display:block;font-size:14px;font-weight:600;color:var(--ink);margin-bottom:6px}
+  .q .help{font-size:12.5px;color:var(--muted);font-weight:400;margin-left:2px}
+  .q input[type=text], .q textarea{
+    width:100%;border:1px solid #DEDEDE;border-radius:11px;padding:11px 13px;
+    font-family:inherit;font-size:14px;color:var(--ink);background:var(--mist);
+    transition:border-color .15s,box-shadow .15s;resize:vertical;
+  }
+  .q textarea{min-height:74px;line-height:1.5}
+  .q input:focus, .q textarea:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-soft);background:#fff}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:560px){.grid2{grid-template-columns:1fr}}
+
+  .scale{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+  .scale label{cursor:pointer}
+  .scale input{position:absolute;opacity:0}
+  .scale span{
+    display:grid;place-items:center;width:38px;height:38px;border-radius:10px;border:1px solid #DEDEDE;
+    font-weight:700;font-size:14px;color:var(--ink);background:var(--mist);transition:all .12s;
+  }
+  .scale input:checked + span{background:var(--gold);border-color:var(--gold);color:#fff}
+
+  .modal-actions{
+    position:sticky;bottom:0;background:#fff;border-top:1px solid var(--line);
+    padding:16px 30px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  }
+  .saved-note{font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:7px}
+  .saved-note .dotg{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block}
+  .btns{display:flex;gap:10px;flex-wrap:wrap}
+  button.act{
+    font-family:inherit;font-size:13.5px;font-weight:700;border-radius:11px;padding:11px 18px;cursor:pointer;
+    border:1px solid transparent;transition:transform .12s,background .15s,border-color .15s;
+  }
+  button.act:active{transform:translateY(1px)}
+  .b-primary{background:var(--black);color:#fff}
+  .b-primary:hover{background:#000}
+  .b-gold{background:var(--gold);color:#fff}
+  .b-gold:hover{background:var(--gold-deep)}
+  .b-ghost{background:#fff;color:var(--ink);border-color:#DADADA}
+  .b-ghost:hover{border-color:#bbb}
+
+  footer{border-top:1px solid var(--line);margin-top:56px;padding:28px 0 46px;color:var(--muted);font-size:13px}
+  .footer-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+
+  /* print */
+  @media print{
+    header,.hero .meta-row,.timeline-sec,.grid,.sec-head,footer{display:none!important}
+    .overlay{position:static;display:block!important;background:#fff;padding:0}
+    .modal{box-shadow:none;max-width:none}
+    .modal-top{background:#fff;color:#000;border-bottom:2px solid var(--gold)}
+    .modal-top .kick{color:var(--gold-deep)}.modal-top p{color:#444}
+    .close,.modal-actions{display:none!important}
+    .q input,.q textarea{background:#fff;border-color:#bbb}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap topbar">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 100 100" aria-label="Winner">
+        <path d="M16 15 L35 15 L50 70 L65 15 L84 15 L60 92 L40 92 Z" fill="#101010"/>
+        <circle cx="83" cy="22" r="9" fill="#C8A24A"/>
+      </svg>
+      <span class="wordmark">winner<span class="ia">.ia</span></span>
+    </div>
+    <span class="nav-tag">Mentoria × Transrota</span>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="hero">
+    <span class="eyebrow">Programa de Aceleração em I.A.</span>
+    <h1>Jornada da mentoria <em>Winner IA</em> com a Transrota</h1>
+    <p class="lede">Seis meses para tirar o operacional das suas mãos, eliminar planilhas e transformar a Transrota numa empresa mais automatizada, eficiente e estratégica. Comece pelo <strong>Mês 1</strong> — clique no card para preencher o diagnóstico do setor.</p>
+
+    <div class="meta-row">
+      <div class="chip"><span class="k">Empresa</span><span class="v">Transrota</span></div>
+      <div class="chip"><span class="k">Segmento</span><span class="v">Transporte<small> · cargas fracionadas</small></span></div>
+      <div class="chip"><span class="k">Equipe</span><span class="v">196 <small>pessoas</small></span></div>
+      <div class="chip"><span class="k">Duração</span><span class="v">6 <small>meses</small></span></div>
+      <div class="chip"><span class="k">Início</span><span class="v">Jun · 2026</span></div>
+    </div>
+  </section>
+
+  <section class="timeline-sec">
+    <div class="track">
+      <div class="node active"><div class="dot">1</div><div class="lbl">Financeiro<br>+ SAC</div></div>
+      <div class="node"><div class="dot">2</div><div class="lbl">Operacional</div></div>
+      <div class="node"><div class="dot">3</div><div class="lbl">Comercial<br>+ Frota</div></div>
+      <div class="node"><div class="dot">4</div><div class="lbl">RH +<br>Comunicação</div></div>
+      <div class="node"><div class="dot">5</div><div class="lbl">Reforço</div></div>
+      <div class="node"><div class="dot">6</div><div class="lbl">Escala</div></div>
+    </div>
+  </section>
+
+  <div class="sec-head">
+    <h2>Plano mês a mês</h2>
+    <span class="hint">Fase 1 (Mês 1–3): gestores e setores · Fase 2 (Mês 4–6): equipes e consolidação</span>
+  </div>
+
+  <section class="grid">
+
+    <div class="phase-label"><span>Fase 1 — Gestores &amp; setores</span></div>
+
+    <!-- MONTH 1 (clickable) -->
+    <article class="card clickable p1" onclick="openModal()" tabindex="0" onkeydown="if(event.key==='Enter')openModal()">
+      <div class="mnum"><span class="badge">1</span> Mês 1 · Junho</div>
+      <h3>Financeiro &amp; SAC</h3>
+      <div class="tags"><span class="tag">Financeiro</span><span class="tag">SAC / Pós-venda</span></div>
+      <ul class="focus">
+        <li>Diagnóstico do setor e mapa do negócio</li>
+        <li>Fluxo de caixa inteligente e controladoria</li>
+        <li>Atendimento, NPS e ciclo de pós-venda</li>
+      </ul>
+      <div class="foot">
+        <span class="pill now">Em foco agora</span>
+        <span class="open-cta">Abrir diagnóstico
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </span>
+      </div>
+    </article>
+
+    <!-- MONTH 2 -->
+    <article class="card p1">
+      <div class="mnum"><span class="badge">2</span> Mês 2 · Julho</div>
+      <h3>Operacional</h3>
+      <div class="tags"><span class="tag">Rotas</span><span class="tag">Entregas</span><span class="tag">Armazém</span></div>
+      <ul class="focus">
+        <li>Roteirizador e gestão inteligente de rotas</li>
+        <li>Comprovantes de entrega automatizados</li>
+        <li>Eliminação de processos manuais por planilha</li>
+      </ul>
+      <div class="foot"><span class="pill next">Próximo</span></div>
+    </article>
+
+    <!-- MONTH 3 -->
+    <article class="card p1">
+      <div class="mnum"><span class="badge">3</span> Mês 3 · Agosto</div>
+      <h3>Comercial &amp; Frota/Compras</h3>
+      <div class="tags"><span class="tag">Comercial</span><span class="tag">Frota</span><span class="tag">Compras</span></div>
+      <ul class="focus">
+        <li>Geração de leads e prospecção ativa</li>
+        <li>Propostas comerciais e precificação</li>
+        <li>Gestão de frota, diárias e compras</li>
+      </ul>
+      <div class="foot"><span class="pill next">A seguir</span></div>
+    </article>
+
+    <div class="phase-label"><span>Fase 2 — Equipes &amp; consolidação</span></div>
+
+    <!-- MONTH 4 -->
+    <article class="card p2">
+      <div class="mnum"><span class="badge">4</span> Mês 4 · Setembro</div>
+      <h3>RH &amp; Comunicação interna</h3>
+      <div class="tags"><span class="tag">RH</span><span class="tag">Comunicação</span></div>
+      <ul class="focus">
+        <li>Processos de pessoas e gestão de atividades</li>
+        <li>Plataforma interna e plano de ações</li>
+        <li>Replicação da IA para as equipes</li>
+      </ul>
+      <div class="foot"><span class="pill phase">Fase 2</span></div>
+    </article>
+
+    <!-- MONTH 5 -->
+    <article class="card p2">
+      <div class="mnum"><span class="badge">5</span> Mês 5 · Outubro</div>
+      <h3>Reforço &amp; aprofundamento</h3>
+      <div class="tags"><span class="tag">Integrações</span><span class="tag">Automação</span></div>
+      <ul class="focus">
+        <li>Aprofundar automações por setor</li>
+        <li>Integração de sistemas (CT-e, banco, TMS)</li>
+        <li>Eliminar o máximo de planilhas</li>
+      </ul>
+      <div class="foot"><span class="pill phase">Fase 2</span></div>
+    </article>
+
+    <!-- MONTH 6 -->
+    <article class="card p2">
+      <div class="mnum"><span class="badge">6</span> Mês 6 · Novembro</div>
+      <h3>Consolidação &amp; escala</h3>
+      <div class="tags"><span class="tag">Diretoria</span><span class="tag">Agentes IA</span></div>
+      <ul class="focus">
+        <li>Dashboards de diretoria para decisão</li>
+        <li>Agentes de análise de números</li>
+        <li>Transrota 2027: mais automatizada e leve</li>
+      </ul>
+      <div class="foot"><span class="pill phase">Fase 2</span></div>
+    </article>
+
+  </section>
+
+  <div class="sec-head">
+    <h2>Como funciona cada mês</h2>
+    <span class="hint">Consultoria com o Lucas · Tutorias com o Diogo · Suporte no grupo</span>
+  </div>
+  <p style="max-width:72ch;color:#4a4a4a;font-size:15px;margin-bottom:8px">
+    A cada mês trabalhamos 1–2 setores em profundidade. Você participa da <strong>consultoria</strong> com o Lucas, aplica na rotina e, sempre que surgir dúvida, solicita <strong>tutorias</strong> com o Diogo no grupo. Dividimos por mês para medir a evolução juntos — quem estiver mais engajado aproveita melhor.
+  </p>
+
+</main>
+
+<!-- ===================== MODAL: DIAGNÓSTICO MÊS 1 ===================== -->
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-top">
+      <button class="close" onclick="closeModal()" aria-label="Fechar">✕</button>
+      <span class="kick">Mês 1 · Material editável</span>
+      <h2 id="modalTitle">Diagnóstico do setor &amp; mapa de oportunidades de IA</h2>
+      <p>Preencha com base na rotina do setor em foco (Financeiro / SAC). Quanto mais detalhe, melhor o cronograma que montamos para a Transrota. As respostas ficam salvas neste navegador — use “Salvar” a qualquer momento e “Imprimir / PDF” para enviar.</p>
+    </div>
+
+    <div class="modal-body">
+      <form id="diagForm" autocomplete="off">
+
+        <!-- 0. Identificação -->
+        <div class="qsection">
+          <span class="s-num"><b>1</b> Identificação</span>
+          <h4>Quem é o setor que vamos mapear</h4>
+          <div class="grid2">
+            <div class="q"><label>Setor em foco</label><input type="text" data-k="setor" placeholder="Ex.: Financeiro / SAC / Pós-venda"></div>
+            <div class="q"><label>Gestor(a) responsável</label><input type="text" data-k="gestor" placeholder="Nome e cargo"></div>
+            <div class="q"><label>Nº de pessoas no setor</label><input type="text" data-k="pessoas" placeholder="Ex.: 8"></div>
+            <div class="q"><label>Analistas que vão participar</label><input type="text" data-k="analistas" placeholder="Quem puxa a mão na massa"></div>
+          </div>
+        </div>
+
+        <!-- 2. Rotina e processos -->
+        <div class="qsection">
+          <span class="s-num"><b>2</b> Rotina &amp; processos</span>
+          <h4>Como o setor trabalha no dia a dia</h4>
+          <div class="q">
+            <label>Principais tarefas do setor <span class="help">— diárias, semanais e mensais</span></label>
+            <textarea data-k="tarefas" placeholder="Ex.: baixa de títulos no banco, conferência de boletos, ligações de NPS, fechamento mensal..."></textarea>
+          </div>
+          <div class="q">
+            <label>Passo a passo de um processo central <span class="help">— escolha o mais importante e descreva do início ao fim</span></label>
+            <textarea data-k="processo" placeholder="Ex.: cobrança — meninas puxam o arquivo do banco, digitam títulos vencidos, conferem, atualizam planilha..."></textarea>
+          </div>
+          <div class="q">
+            <label>Ferramentas e sistemas usados <span class="help">— CRM, ERP/TMS, financeiro, comunicação</span></label>
+            <textarea data-k="ferramentas" placeholder="Ex.: RD Station, TMS próprio, Outlook, plataforma interna (estilo Notion), Excel..."></textarea>
+          </div>
+        </div>
+
+        <!-- 3. Gargalos -->
+        <div class="qsection">
+          <span class="s-num"><b>3</b> Gargalos &amp; dores</span>
+          <h4>Onde está se perdendo tempo e dinheiro</h4>
+          <div class="q">
+            <label>Tarefas que mais consomem tempo <span class="help">— e que parecem repetitivas/manuais</span></label>
+            <textarea data-k="gargalos" placeholder="Ex.: digitação de planilhas, conferência de comprovantes, lançamentos manuais..."></textarea>
+          </div>
+          <div class="q">
+            <label>Onde há retrabalho, falha de comunicação ou informação perdida</label>
+            <textarea data-k="retrabalho" placeholder="Ex.: comprovante de entrega lançado manualmente, custos ocultos por cliente difícil de enxergar..."></textarea>
+          </div>
+          <div class="q">
+            <label>Decisões tomadas “no feeling” que deveriam ser baseadas em dados</label>
+            <textarea data-k="feeling" placeholder="Ex.: priorização de pagamentos, precificação por cliente, prorrogação de boletos..."></textarea>
+          </div>
+        </div>
+
+        <!-- 4. Oportunidades IA -->
+        <div class="qsection">
+          <span class="s-num"><b>4</b> Oportunidades de IA</span>
+          <h4>Onde a IA pode entrar primeiro</h4>
+          <div class="q">
+            <label>O que você gostaria de automatizar ou eliminar neste setor</label>
+            <textarea data-k="automatizar" placeholder="Ex.: importar arquivo do banco e o sistema já lançar tudo; relatório que se monta sozinho sem exportar..."></textarea>
+          </div>
+          <div class="q">
+            <label>Quais relatórios ou visualizações ajudariam na tomada de decisão</label>
+            <textarea data-k="visualizacao" placeholder="Ex.: dias do mês em vermelho/amarelo/verde no fluxo de caixa; evolução de despesas vs faturamento..."></textarea>
+          </div>
+          <div class="q">
+            <label>Se a IA resolvesse <strong>uma única</strong> coisa crucial neste setor, o que seria?</label>
+            <textarea data-k="crucial" placeholder="Ex.: dar clareza total do financeiro para decisão."></textarea>
+          </div>
+        </div>
+
+        <!-- 5. Maturidade -->
+        <div class="qsection">
+          <span class="s-num"><b>5</b> Uso atual &amp; maturidade</span>
+          <h4>De onde estamos partindo</h4>
+          <div class="q">
+            <label>O setor já usa IA hoje? Como?</label>
+            <textarea data-k="usoatual" placeholder="Ex.: análise de dados, geração de e-mails, conciliações bancárias, criação de planilhas..."></textarea>
+          </div>
+          <div class="q">
+            <label>Maturidade digital do setor <span class="help">— de 0 a 10</span></label>
+            <div class="scale" id="scale">
+              <!-- filled by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. Metas -->
+        <div class="qsection">
+          <span class="s-num"><b>6</b> Metas do mês</span>
+          <h4>Onde queremos chegar</h4>
+          <div class="q">
+            <label>Resultado esperado nos próximos 30 dias</label>
+            <textarea data-k="meta30" placeholder="Ex.: primeira automação rodando na cobrança; visão de fluxo de caixa diária."></textarea>
+          </div>
+          <div class="q">
+            <label>Como esse setor deve estar ao fim dos 6 meses</label>
+            <textarea data-k="meta6" placeholder="Ex.: sem planilhas manuais, dados claros, equipe mais estratégica."></textarea>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="modal-actions">
+      <span class="saved-note" id="savedNote"><span class="dotg"></span> Salva automaticamente neste navegador</span>
+      <div class="btns">
+        <button class="act b-ghost" onclick="clearForm()">Limpar</button>
+        <button class="act b-ghost" onclick="window.print()">Imprimir / PDF</button>
+        <button class="act b-primary" onclick="saveForm(true)">Salvar respostas</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap footer-row">
+    <span>winner<span style="color:var(--gold);font-weight:700">.ia</span> &nbsp;·&nbsp; Programa de Aceleração em I.A. para a Transrota</span>
+    <span>Material gerado a partir da reunião de boas-vindas · 28/05/2026</span>
+  </div>
+</footer>
+
+<script>
+  const KEY = 'winner_transrota_mes1_diag';
+
+  // build 0-10 scale
+  (function(){
+    const s = document.getElementById('scale');
+    for(let i=0;i<=10;i++){
+      const l=document.createElement('label');
+      l.innerHTML='<input type="radio" name="maturidade" value="'+i+'"><span>'+i+'</span>';
+      s.appendChild(l);
+    }
+  })();
+
+  function collect(){
+    const data={};
+    document.querySelectorAll('[data-k]').forEach(el=>data[el.dataset.k]=el.value);
+    const m=document.querySelector('input[name="maturidade"]:checked');
+    data.maturidade = m? m.value : '';
+    return data;
+  }
+  function apply(data){
+    if(!data) return;
+    document.querySelectorAll('[data-k]').forEach(el=>{ if(data[el.dataset.k]!=null) el.value=data[el.dataset.k]; });
+    if(data.maturidade!=null && data.maturidade!==''){
+      const r=document.querySelector('input[name="maturidade"][value="'+data.maturidade+'"]');
+      if(r) r.checked=true;
+    }
+  }
+  function saveForm(flash){
+    try{ localStorage.setItem(KEY, JSON.stringify(collect())); }catch(e){}
+    if(flash){
+      const n=document.getElementById('savedNote');
+      n.innerHTML='<span class="dotg"></span> Respostas salvas ✓';
+      setTimeout(()=>{ n.innerHTML='<span class="dotg"></span> Salva automaticamente neste navegador'; },2200);
+    }
+  }
+  function loadForm(){
+    try{ const raw=localStorage.getItem(KEY); if(raw) apply(JSON.parse(raw)); }catch(e){}
+  }
+  function clearForm(){
+    if(!confirm('Limpar todas as respostas deste material?')) return;
+    document.getElementById('diagForm').reset();
+    try{ localStorage.removeItem(KEY); }catch(e){}
+  }
+
+  // autosave
+  document.addEventListener('input', e=>{ if(e.target.closest('#diagForm')) saveForm(false); });
+  document.addEventListener('change', e=>{ if(e.target.closest('#diagForm')) saveForm(false); });
+
+  function openModal(){
+    document.getElementById('overlay').classList.add('open');
+    document.body.style.overflow='hidden';
+    loadForm();
+  }
+  function closeModal(){
+    document.getElementById('overlay').classList.remove('open');
+    document.body.style.overflow='';
+  }
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
+
+  // restore on load too (so print works even before opening)
+  loadForm();
+</script>
+</body>
+</html>
